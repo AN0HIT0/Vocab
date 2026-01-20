@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Textbook Vocab Master (Unit 1-11 Full)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            background-color: #f3f4f6;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .correct-anim {
+            background-color: #d1fae5 !important;
+            border-color: #10b981 !important;
+            color: #065f46 !important;
+        }
+        .wrong-anim {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            color: #991b1b !important;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c7c7c7;
+            border-radius: 4px;
+        }
+        .cloze-blank {
+            border-bottom: 2px solid #0d9488;
+            color: #0d9488;
+            font-weight: bold;
+            padding: 0 4px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body class="text-gray-800 h-screen flex flex-col overflow-hidden">
+
+    <header class="bg-slate-800 text-white shadow-md z-10 shrink-0">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-lg font-bold flex items-center gap-2">
+                <i class="fas fa-book-open text-teal-400"></i>
+                <span>Textbook Vocab Master</span>
+            </h1>
+            <div class="flex items-center gap-3">
+                <button onclick="resetData()" class="text-xs text-slate-400 hover:text-white underline">データリセット</button>
+                <div class="text-xs bg-slate-700 px-3 py-1 rounded-full border border-slate-600">Total: <span id="total-count">0</span> words</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="bg-white shadow-sm shrink-0 z-10">
+        <div class="max-w-5xl mx-auto flex">
+            <button onclick="switchTab('list')" id="tab-list" class="flex-1 py-3 text-center border-b-2 border-teal-500 text-teal-600 font-semibold focus:outline-none transition-colors">
+                <i class="fas fa-list mr-1"></i> 単語一覧
+            </button>
+            <button onclick="switchTab('quiz')" id="tab-quiz" class="flex-1 py-3 text-center border-b-2 border-transparent text-gray-500 font-semibold hover:text-teal-500 focus:outline-none transition-colors">
+                <i class="fas fa-gamepad mr-1"></i> 実力テスト
+            </button>
+        </div>
+    </div>
+
+    <main class="flex-1 overflow-y-auto relative w-full bg-gray-50">
+        <div class="max-w-5xl mx-auto h-full p-4">
+            
+            <div id="view-list" class="fade-in flex flex-col h-full">
+                <div class="flex flex-col sm:flex-row gap-3 mb-4 shrink-0">
+                    <div class="relative flex-grow">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" id="search-input" placeholder="単語、意味、定義を検索..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-sm transition-shadow" onkeyup="filterList()">
+                    </div>
+                    <div class="flex gap-2">
+                        <div class="relative min-w-[140px]">
+                            <select id="rank-filter" onchange="filterList()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-sm appearance-none bg-white cursor-pointer text-sm">
+                                <option value="all">全てのランク</option>
+                                <option value="2">Rank 2 (Master)</option>
+                                <option value="1">Rank 1 (Advanced)</option>
+                                <option value="0">Rank 0 (Normal)</option>
+                                <option value="-1">Rank -1 (Warning)</option>
+                                <option value="-2">Rank -2 (Weak)</option>
+                            </select>
+                            <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+                        </div>
+                        <div class="relative min-w-[140px]">
+                            <select id="unit-filter" onchange="filterList()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-sm appearance-none bg-white cursor-pointer text-sm">
+                                <option value="all">全てのユニット</option>
+                                </select>
+                            <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-3 mb-2 text-xs text-gray-500 px-2">
+                    <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-purple-100 border border-purple-300 mr-1"></span> Rank 2 (Master)</div>
+                    <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-blue-100 border border-blue-300 mr-1"></span> Rank 1 (Advanced)</div>
+                    <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-white border border-gray-200 mr-1"></span> Rank 0 (Normal)</div>
+                    <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-yellow-100 border border-yellow-300 mr-1"></span> Rank -1 (Warning)</div>
+                    <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-red-100 border border-red-300 mr-1"></span> Rank -2 (Weak)</div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden flex-1 flex flex-col">
+                    <div class="overflow-x-auto custom-scrollbar flex-1">
+                        <table class="min-w-full divide-y divide-gray-200 relative">
+                            <thead class="bg-gray-50 sticky top-0 z-10 shadow-sm">
+                                <tr>
+                                    <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase w-12">Rank</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase w-24">Unit</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Word</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Meaning / Definition / Sentence</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="vocab-table-body">
+                                </tbody>
+                        </table>
+                    </div>
+                    <div id="no-results" class="hidden flex-col items-center justify-center py-12 text-gray-400">
+                        <p>該当する単語が見つかりません</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-quiz" class="hidden fade-in h-full flex flex-col">
+                
+                <div id="quiz-start" class="flex flex-col items-center justify-center h-full text-center space-y-8 py-8 overflow-y-auto">
+                    <div class="bg-teal-100 p-8 rounded-full text-teal-600 shadow-inner shrink-0">
+                        <i class="fas fa-layer-group text-5xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Adaptive Quiz</h2>
+                        <p class="text-gray-600 text-sm max-w-xs mx-auto">
+                            あなたのランクに合わせて出題形式が変化します。<br>
+                            <span class="text-teal-600 font-bold">Rank 0以下</span>: 日本語の意味<br>
+                            <span class="text-purple-600 font-bold">Rank 1以上</span>: 英語定義・穴埋め問題が出現
+                        </p>
+                    </div>
+                    
+                    <div class="w-full max-w-sm space-y-3 pb-8">
+                        <button onclick="startQuiz('weak')" id="weak-mode-btn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition transform hover:scale-[1.02] flex items-center justify-center gap-2">
+                             <i class="fas fa-fire"></i> 苦手克服 (Rank < 0)
+                        </button>
+
+                        <button onclick="startQuiz(10, 'all')" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition transform hover:scale-[1.02] flex items-center justify-center gap-2">
+                            <i class="fas fa-random"></i> 全範囲からランダム10問
+                        </button>
+
+                        <div class="grid grid-cols-2 gap-3" id="unit-buttons-container">
+                            </div>
+                    </div>
+                </div>
+
+                <div id="quiz-question" class="hidden flex flex-col h-full max-w-lg mx-auto w-full pt-4">
+                    <div class="flex justify-between items-end mb-4 px-1">
+                        <div>
+                            <span id="quiz-unit-badge" class="text-xs font-bold text-teal-600 bg-teal-100 px-2 py-1 rounded mb-1 inline-block">Unit 7</span>
+                            <div class="text-sm font-medium text-gray-400" id="question-counter">Question 1/10</div>
+                        </div>
+                        <div class="text-right">
+                            <div id="rank-indicator" class="text-xs font-bold mb-1 px-2 py-0.5 rounded bg-gray-100 text-gray-500 inline-block">Rank: 0</div>
+                            <div>
+                                <span id="score-display" class="text-lg font-bold text-teal-600">0</span>
+                                <span class="text-xs text-gray-400">pts</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-full bg-gray-200 rounded-full h-2 mb-6">
+                        <div id="progress-bar" class="bg-teal-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-xl p-6 text-center mb-6 flex-grow flex flex-col justify-center items-center relative overflow-hidden border border-gray-100 min-h-[200px]">
+                        <span id="q-type-label" class="text-xs font-bold tracking-widest text-teal-500 mb-2 uppercase">MEANING</span>
+                        
+                        <div id="q-content-area" class="flex flex-col items-center justify-center w-full h-full overflow-y-auto custom-scrollbar">
+                            </div>
+                        
+                        <div id="feedback-overlay" class="absolute inset-0 bg-white/95 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 z-20 p-4">
+                            <div id="feedback-icon" class="text-6xl transform scale-50 transition-transform duration-300 mb-2"></div>
+                            <div id="rank-change-msg" class="text-xl font-bold mb-2"></div>
+                            
+                            <div id="correct-answer-display" class="text-center mt-2 border-t border-gray-200 pt-2 w-full">
+                                </div>
+                        </div>
+                    </div>
+
+                    <div id="choices-container" class="grid grid-cols-1 gap-3 pb-6 text-sm">
+                        </div>
+                </div>
+
+                <div id="quiz-result" class="hidden flex flex-col items-center justify-center h-full text-center space-y-6">
+                    <div id="result-icon-container" class="p-6 rounded-full mb-2 shadow-lg">
+                        <i id="result-icon" class="fas fa-trophy text-4xl"></i>
+                    </div>
+                    
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Result</h2>
+                        <p id="result-subtitle" class="text-gray-500 text-sm mt-1">Review</p>
+                    </div>
+
+                    <div class="flex items-end justify-center gap-2">
+                        <span id="final-score" class="text-6xl font-bold text-teal-600 leading-none">8</span>
+                        <span class="text-xl text-gray-400 font-medium mb-1">/ <span id="total-questions">10</span></span>
+                    </div>
+
+                    <div class="bg-white px-6 py-4 rounded-xl shadow-sm border border-gray-100 w-full max-w-xs">
+                         <div class="flex justify-between items-center text-sm mb-1">
+                            <span class="text-gray-600">Level Progress:</span>
+                        </div>
+                        <div class="flex justify-around items-center font-bold">
+                            <span class="text-blue-500" title="Level Up"><i class="fas fa-arrow-up"></i> <span id="rank-up-count">0</span></span>
+                            <span class="text-red-500" title="Level Down"><i class="fas fa-arrow-down"></i> <span id="rank-down-count">0</span></span>
+                        </div>
+                    </div>
+
+                    <button onclick="resetQuizView()" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-10 rounded-xl shadow-lg transition transform hover:scale-105">
+                        Back to Menu
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- 1. Database (Unit 1-11 Full) ---
+        const rawData = [
+            // Unit 1
+            { u:1, w:"edible", j:"食べられる", d:"able to be eaten", s:"" },
+            { u:1, w:"ambiance", j:"雰囲気", d:"atmosphere or feeling created by a place", s:"" },
+            { u:1, w:"notion", j:"概念・考え", d:"idea; concept", s:"" },
+            { u:1, w:"portrait", j:"肖像画", d:"visual representation of a person", s:"" },
+            { u:1, w:"contend", j:"主張する", d:"state; insist", s:"" },
+            { u:1, w:"tactile", j:"触覚の", d:"related to the sense of touch", s:"" },
+            { u:1, w:"exhibition", j:"展示会", d:"display of artwork or other items", s:"" },
+            { u:1, w:"acuity", j:"鋭さ", d:"sharpness (sight or mental ability)", s:"" },
+            { u:1, w:"incorporate", j:"組み込む", d:"include; make part of", s:"" },
+            { u:1, w:"push the envelope", j:"限界に挑む", d:"go beyond current limits", s:"" },
+            { u:1, w:"on hand", j:"手元に", d:"available; nearby", s:"I don't have any paint brushes ______, but if you need some, we can stop by my studio." },
+            { u:1, w:"simulate", j:"模倣する", d:"imitate", s:"To ______ the feeling of floating in space, astronauts practice performing repairs underwater." },
+            { u:1, w:"landscape", j:"風景", d:"scenery", s:"This ______ has incredibly detailed brushwork on the trees." },
+            { u:1, w:"abstract", j:"抽象的な", d:"existing in thought or as an idea", s:"______ paintings are often hard to figure out since the artwork may consist entirely of simple shapes." },
+            { u:1, w:"industrial", j:"産業の", d:"related to factories or industry", s:"There is a recycling center in the ______ district of the city." },
+
+            // Unit 2 (Added)
+            { u:2, w:"prompt", j:"迅速な", d:"on time; quick", s:"" },
+            { u:2, w:"trait", j:"特徴", d:"personal characteristic", s:"" },
+            { u:2, w:"subscribe to", j:"同意する", d:"follow; agree with", s:"" },
+            { u:2, w:"demeanor", j:"振る舞い", d:"behavior; attitude", s:"" },
+            { u:2, w:"encompass", j:"含む・網羅する", d:"include; cover", s:"" },
+            { u:2, w:"trustworthy", j:"信頼できる", d:"honest; reliable", s:"" },
+            { u:2, w:"persistence", j:"粘り強さ", d:"determination; diligence", s:"" },
+            { u:2, w:"embolden", j:"励ます", d:"give confidence to; encourage", s:"" },
+            { u:2, w:"variable", j:"変わりやすい要素", d:"changeable factor", s:"" },
+            { u:2, w:"in short supply", j:"不足して", d:"having a limited quantity", s:"" },
+            { u:2, w:"outwardly", j:"表面上は", d:"on the outside", s:"______, Monica is friendly and sociable, but she considers herself a private person." },
+            { u:2, w:"diagnose", j:"診断する", d:"identify a condition", s:"Phil was ______d with a mild hip strain after his bike accident." },
+            { u:2, w:"self-perpetuating", j:"自滅的な・永続する", d:"continuing without external intervention", s:"If a problem is seen as too big... the problem persists in a ______ cycle." },
+            { u:2, w:"obedience", j:"服従", d:"following rules or orders", s:"Complete ______ is expected at the military academy, where the rules must be followed without question." },
+            { u:2, w:"ingrained", j:"深く染み込んだ", d:"deeply established", s:"Waking up at 6:30 is such an ______ habit for my parents that they don't need an alarm clock." },
+
+            // Unit 3 (Added)
+            { u:3, w:"reveal", j:"明らかにする", d:"show; make something known", s:"" },
+            { u:3, w:"sprawling", j:"不規則に広がった", d:"spread out; taking up a lot of space", s:"" },
+            { u:3, w:"life span", j:"寿命", d:"the length of time lived", s:"" },
+            { u:3, w:"downside", j:"欠点", d:"problem; negative point", s:"" },
+            { u:3, w:"subterranean", j:"地下の", d:"underground", s:"" },
+            { u:3, w:"ancient", j:"古代の", d:"very old; happening a long time ago", s:"" },
+            { u:3, w:"replenish", j:"補充する", d:"fill up again", s:"" },
+            { u:3, w:"originate", j:"起源がある", d:"start; come from", s:"" },
+            { u:3, w:"critical", j:"極めて重要な", d:"extremely important", s:"" },
+            { u:3, w:"approximately", j:"およそ", d:"about; around", s:"" },
+            { u:3, w:"nutrient", j:"栄養素", d:"substance needed for growth", s:"Strawberries are rich in ______s like vitamin C and potassium." },
+            { u:3, w:"adaptation", j:"適応", d:"change to suit environment", s:"A common ______ of animals living in cold climates is the development of thick skin or fur." },
+            { u:3, w:"take advantage of", j:"利用する", d:"make good use of", s:"Currently, three bat species are ______ the cave's stable temperature to have their young there." },
+            { u:3, w:"a plethora of", j:"大量の", d:"a large amount of", s:"______ fish were in the lake. I was amazed by how many I saw." },
+            { u:3, w:"habitat", j:"生息地", d:"natural home of an animal", s:"Beetles are found in many types of ______s, including those which are humid, dry, warm, or cold." },
+
+            // Unit 4 (Added)
+            { u:4, w:"calculation", j:"計算", d:"guess / estimate", s:"Though the ______ involved several 15-digit numbers, the computer handled it easily." },
+            { u:4, w:"quantify", j:"数値化する", d:"assign a numerical value", s:"" },
+            { u:4, w:"majority", j:"過半数", d:"more than 50% of a group", s:"" },
+            { u:4, w:"boundary", j:"境界", d:"limit; edge", s:"" },
+            { u:4, w:"entail", j:"伴う", d:"involve; include", s:"" },
+            { u:4, w:"perseverance", j:"忍耐力", d:"the quality of not giving up", s:"" },
+            { u:4, w:"characterize", j:"特徴づける", d:"describe in a certain way", s:"" },
+            { u:4, w:"in tandem", j:"連携して", d:"together; along with", s:"" },
+            { u:4, w:"ahead of its time", j:"時代を先取りした", d:"more advanced than what others are doing", s:"" },
+            { u:4, w:"meticulous", j:"綿密な", d:"very careful; paying close attention to detail", s:"" },
+            { u:4, w:"surmise", j:"推測する", d:"guess", s:"" },
+            { u:4, w:"de facto", j:"事実上の", d:"in practice, though not officially", s:"Carl is the ______ leader of the group. He doesn't have an official title, but everyone listens to him." },
+            { u:4, w:"reject", j:"拒絶する", d:"refuse to accept", s:"The proposal was ______ed because it would have been too expensive." },
+            { u:4, w:"tackle", j:"取り組む", d:"deal with a problem", s:"During our next meeting, we'll ______ the question of how to pay for a new copy machine." },
+            { u:4, w:"concentration", j:"集中", d:"gathering; cluster", s:"The ______ of so many technology companies in Silicon Valley makes it easy to find experts for difficult computing jobs." },
+
+            // Unit 5 (Added)
+            { u:5, w:"surgeon", j:"外科医", d:"doctor who performs operations", s:"" },
+            { u:5, w:"disseminate", j:"広める", d:"send out; distribute", s:"" },
+            { u:5, w:"on the horizon", j:"兆しが見えて", d:"coming in the near future", s:"" },
+            { u:5, w:"in conjunction with", j:"〜と共に", d:"together with", s:"" },
+            { u:5, w:"array", j:"勢ぞろい", d:"range; variety", s:"" },
+            { u:5, w:"fatigue", j:"疲労", d:"tiredness", s:"" },
+            { u:5, w:"assess", j:"評価する", d:"analyze; consider", s:"" },
+            { u:5, w:"burgeoning", j:"急成長する", d:"growing; expanding", s:"" },
+            { u:5, w:"bona fide", j:"正真正銘の", d:"genuine; real", s:"" },
+            { u:5, w:"optimize", j:"最適化する", d:"improve; make something as good as it can be", s:"" },
+            { u:5, w:"regimen", j:"計画・養生法", d:"prescribed course of medical treatment or diet", s:"Olympians have demanding training ______ involving strict diets, workout routines, and practice sessions." },
+            { u:5, w:"convert", j:"転換する", d:"change form", s:"Before solar energy can be used in a home, the electricity must be ______ed from DC to AC power." },
+            { u:5, w:"at stake", j:"賭けられて", d:"at risk", s:"If the home team wins, they will advance to the championship round, so there's a lot ______ with today's game." },
+            { u:5, w:"rehabilitation", j:"リハビリ", d:"restoration to health", s:"The ______ program for her sprained ankle includes swimming laps." },
+            { u:5, w:"circulation", j:"循環", d:"movement of blood", s:"When you're cold, rubbing your hands together improves ______." },
+
+            // Unit 6 (Added)
+            { u:6, w:"intersect", j:"交差する", d:"meet; cross", s:"" },
+            { u:6, w:"expand one's horizons", j:"視野を広げる", d:"broaden one's knowledge or interests", s:"" },
+            { u:6, w:"rapport", j:"信頼関係", d:"relationship; bond", s:"" },
+            { u:6, w:"accurate", j:"正確な", d:"correct", s:"" },
+            { u:6, w:"unconscious", j:"無意識の", d:"automatic; instinctive; involuntary", s:"" },
+            { u:6, w:"out of the ordinary", j:"並外れた", d:"unusual; uncommon", s:"" },
+            { u:6, w:"underpinning", j:"基礎・土台", d:"basis; foundation", s:"" },
+            { u:6, w:"interpret", j:"解釈する", d:"figure out; analyze", s:"" },
+            { u:6, w:"affable", j:"愛想の良い", d:"friendly", s:"" },
+            { u:6, w:"acknowledge", j:"認める", d:"admit; recognize", s:"" },
+            { u:6, w:"pitfall", j:"落とし穴", d:"hidden danger", s:"Companies selling goods overseas often have trouble securing shelf space... It's one of the ______s of international business." },
+            { u:6, w:"behavior", j:"振る舞い", d:"way of acting", s:"In a library, making loud noises is unacceptable ______." },
+            { u:6, w:"prediction", j:"予測", d:"guess about future", s:"What's your ______ for the outcome of the soccer tournament?" },
+            { u:6, w:"authority", j:"権限", d:"power or right", s:"As the managing director, only Mr. Garcia has the ______ to approve salary bonuses." },
+            { u:6, w:"nationality", j:"国籍", d:"status of belonging to a nation", s:"I believe Patricia's ______ is French, but she might be Swiss." },
+
+            // Unit 7
+            { u:7, w:"amenity", j:"快適な設備", d:"luxury; special feature", s:"" },
+            { u:7, w:"budget", j:"予算", d:"amount of money available or planned", s:"" },
+            { u:7, w:"carbon footprint", j:"二酸化炭素排出量", d:"amount of carbon dioxide emitted", s:"Riding a bicycle and recycling will reduce your ______." },
+            { u:7, w:"configuration", j:"配置・構成", d:"set up; connect", s:"A popular ______ for solar panels involves laying them on your roof." },
+            { u:7, w:"embrace", j:"受け入れる", d:"welcome", s:"" },
+            { u:7, w:"forgo", j:"なしで済ませる", d:"do without", s:"" },
+            { u:7, w:"install", j:"設置する", d:"set up; connect", s:"" },
+            { u:7, w:"orchard", j:"果樹園", d:"group of trees that bear fruits or nuts", s:"" },
+            { u:7, w:"permit", j:"許可証", d:"document saying you're allowed to do something", s:"" },
+            { u:7, w:"safety net", j:"安全策", d:"something that provides security against misfortune", s:"We use a wind turbine... It's a ______ in case the turbine doesn't produce enough electricity." },
+            { u:7, w:"self-sufficient", j:"自給自足の", d:"independent; able to take care of yourself", s:"" },
+            { u:7, w:"susceptible", j:"影響を受けやすい", d:"likely to be influenced or harmed", s:"Homes near the ocean are ______ to natural disasters like typhoons." },
+            { u:7, w:"utility", j:"公共料金・公益事業", d:"public service (electricity, water, etc.)", s:"The ______ company announced the price of natural gas will go up 2% next month." },
+            { u:7, w:"viable", j:"実行可能な", d:"possible; suitable", s:"" },
+            { u:7, w:"virtually", j:"事実上", d:"nearly; almost", s:"" },
+
+            // Unit 8
+            { u:8, w:"audition", j:"オーディション", d:"tryout for an acting role", s:"" },
+            { u:8, w:"competitive", j:"競争の激しい", d:"involving competition", s:"Even getting a position as an unpaid intern... is ______." },
+            { u:8, w:"craft", j:"技術・工芸", d:"art; trade", s:"" },
+            { u:8, w:"enraging", j:"激怒させる", d:"making someone very angry", s:"" },
+            { u:8, w:"feather in one's cap", j:"名誉となる成果", d:"accomplishment; something to be proud of", s:"" },
+            { u:8, w:"mannerism", j:"癖・特徴", d:"habit; custom", s:"" },
+            { u:8, w:"memorize", j:"暗記する", d:"remember every word", s:"" },
+            { u:8, w:"motivation", j:"動機", d:"purpose; reason for doing something", s:"" },
+            { u:8, w:"nuanced", j:"微妙な差異のある", d:"subtle; finely detailed", s:"" },
+            { u:8, w:"one-size-fits-all", j:"万能の", d:"suitable for everyone or every purpose", s:"The hat is ______. Adjust the band on the back to fit your head." },
+            { u:8, w:"refine", j:"洗練する", d:"improve by making small changes", s:"The post-production editing process used to take six months. By ______ing its methods, the studio reduced both the time and cost." },
+            { u:8, w:"repertoire", j:"レパートリー", d:"list of pieces an actor/musician can perform", s:"The horror film star took a role in a comedy to expand his ______." },
+            { u:8, w:"screenplay", j:"脚本", d:"book containing the lines spoken in a movie", s:"" },
+            { u:8, w:"strike a balance", j:"バランスをとる", d:"find a compromise", s:"When you work 60 hours a week, it's difficult to ______ between your professional and private lives." },
+            { u:8, w:"strive", j:"努力する", d:"try very hard; aim for", s:"" },
+
+            // Unit 9
+            { u:9, w:"account for", j:"〜を占める", d:"supply or make up (a specified amount)", s:"Packaging costs currently ______ 15% of our production budget." },
+            { u:9, w:"arable", j:"耕作に適した", d:"suitable for farming", s:"" },
+            { u:9, w:"attendee", j:"出席者", d:"person present at an event", s:"At the end of the speech, the 600 ______s stood and clapped." },
+            { u:9, w:"commit to", j:"〜を約束する", d:"promise to", s:"" },
+            { u:9, w:"decompose", j:"分解する", d:"break down into smaller parts", s:"" },
+            { u:9, w:"fertilizer", j:"肥料", d:"substance added to soil to increase fertility", s:"When mixed in, the ______ adds nutrients to the soil, making it stronger." },
+            { u:9, w:"garner attention", j:"注目を集める", d:"get or earn attention", s:"The supermarket ______ when it announced that its deli would switch to biodegradable packaging." },
+            { u:9, w:"in its infancy", j:"初期段階で", d:"very new; just started", s:"" },
+            { u:9, w:"insatiable", j:"飽くなき", d:"unable to be satisfied", s:"" },
+            { u:9, w:"landfill", j:"埋立地", d:"place where garbage is buried", s:"" },
+            { u:9, w:"mutually exclusive", j:"相互排他的な", d:"unable to exist together", s:"" },
+            { u:9, w:"petroleum", j:"石油", d:"liquid used to make oil", s:"" },
+            { u:9, w:"statistic", j:"統計値", d:"number providing information", s:"" },
+            { u:9, w:"stop-gap", j:"一時しのぎの", d:"done as a short-term measure", s:"" },
+            { u:9, w:"toxic", j:"有毒な", d:"poisonous", s:"The waste is ______, so it must be transported in sealed drums." },
+
+            // Unit 10
+            { u:10, w:"amusing", j:"面白い", d:"funny; entertaining", s:"" },
+            { u:10, w:"blame", j:"〜のせいにする", d:"assign responsibility for a fault", s:"Below-average sales were ______d on the poor weather." },
+            { u:10, w:"brick-and-mortar store", j:"実店舗", d:"physical shop", s:"" },
+            { u:10, w:"consequence", j:"結果", d:"result", s:"" },
+            { u:10, w:"demographic", j:"顧客層", d:"particular sector of a population", s:"Our main ______ is women aged 21-27." },
+            { u:10, w:"entice", j:"引き寄せる", d:"attract; tempt", s:"" },
+            { u:10, w:"exclusive", j:"独占的な", d:"only available at a certain place", s:"" },
+            { u:10, w:"go bankrupt", j:"破産する", d:"lose all money and cannot pay debts", s:"Because of its huge debt... the steel maker was forced to ______." },
+            { u:10, w:"journalist", j:"ジャーナリスト", d:"reporter", s:"" },
+            { u:10, w:"keep pace", j:"遅れずについていく", d:"maintain the same speed", s:"" },
+            { u:10, w:"kiosk", j:"売店", d:"small booth at a mall or festival", s:"" },
+            { u:10, w:"marketing", j:"マーケティング", d:"advertising and selling", s:"" },
+            { u:10, w:"surge", j:"急増", d:"sharp rise or growth", s:"" },
+            { u:10, w:"sustainable", j:"持続可能な", d:"able to be maintained at a certain rate", s:"Companies that continually spend more than they earn do not have a ______ business model." },
+            { u:10, w:"volatile", j:"変動しやすい", d:"rising or falling quickly", s:"Raw material prices can be ______ in a short period due to changing economic conditions." },
+
+            // Unit 11
+            { u:11, w:"anxiety", j:"不安", d:"feeling of worry or nervousness", s:"Emilia suffered from ______ due to her stressful work environment." },
+            { u:11, w:"assertion", j:"主張・断言", d:"claim; declaration", s:"" },
+            { u:11, w:"at one's fingertips", j:"すぐに利用できる", d:"close by; accessible", s:"" },
+            { u:11, w:"cognitive", j:"認知の", d:"related to mental functions", s:"" },
+            { u:11, w:"crucial", j:"極めて重要な", d:"very important; necessary", s:"" },
+            { u:11, w:"diligent", j:"勤勉な", d:"careful and hardworking", s:"We need to be ______ about keeping the storm drains clear of debris." },
+            { u:11, w:"enable", j:"可能にする", d:"make possible; allow", s:"" },
+            { u:11, w:"exception", j:"例外", d:"person or thing excluded", s:"Animals aren't allowed... with the ______ of service animals." },
+            { u:11, w:"interfere", j:"妨げる", d:"prevent process from continuing", s:"The noise from the busy street is ______ing with my sleep patterns." },
+            { u:11, w:"mitigate", j:"和らげる", d:"make something less problematic", s:"" },
+            { u:11, w:"outlet", j:"はけ口", d:"way of expressing strong feelings", s:"Drawing is a creative ______ for countless children." },
+            { u:11, w:"threshold", j:"敷居・境界点", d:"certain level or point", s:"" },
+            { u:11, w:"tolerance", j:"寛容", d:"respect for and acceptance of diverse ideas", s:"" },
+            { u:11, w:"ubiquitous", j:"至る所にある", d:"seen everywhere", s:"" },
+            { u:11, w:"vie for", j:"〜を競う", d:"compete for", s:"" }
+        ];
+
+        // --- 2. Logic ---
+        let vocabData = [];
+        const units = [...new Set(rawData.map(i => i.u))].sort((a,b)=>a-b);
+        let currentCorrectAnswerText = ""; 
+        
+        function loadData() {
+            const stored = localStorage.getItem('textbookVocabMastery_v4');
+            const mastery = stored ? JSON.parse(stored) : {};
+            
+            vocabData = rawData.map(item => ({
+                ...item,
+                unitFull: "Unit " + item.u,
+                rank: mastery[item.w] !== undefined ? mastery[item.w] : 0 
+            }));
+
+            const filter = document.getElementById('unit-filter');
+            filter.innerHTML = '<option value="all">全てのユニット</option>';
+            units.forEach(u => {
+                filter.innerHTML += `<option value="${u}">Unit ${u}</option>`;
+            });
+
+            const btnContainer = document.getElementById('unit-buttons-container');
+            btnContainer.innerHTML = '';
+            units.forEach(u => {
+                btnContainer.innerHTML += `
+                    <button onclick="startQuiz('all', ${u})" class="bg-white border-2 border-indigo-100 hover:border-indigo-500 text-gray-700 hover:text-indigo-600 font-semibold py-3 px-2 rounded-lg transition text-sm">
+                        Unit ${u}
+                    </button>
+                `;
+            });
+        }
+
+        function saveData() {
+            const mastery = {};
+            vocabData.forEach(item => {
+                if (item.rank !== 0) mastery[item.w] = item.rank;
+            });
+            localStorage.setItem('textbookVocabMastery_v4', JSON.stringify(mastery));
+        }
+
+        function resetData() {
+            if(confirm('全ての学習データをリセットしますか？')) {
+                localStorage.removeItem('textbookVocabMastery_v4');
+                loadData();
+                renderList(vocabData);
+                updateWeakButton();
+                alert('リセットしました');
+            }
+        }
+
+        function updateRank(word, isCorrect) {
+            const item = vocabData.find(i => i.w === word);
+            if (!item) return;
+
+            if (isCorrect) {
+                if (item.rank < 2) item.rank++;
+            } else {
+                if (item.rank > -2) item.rank--;
+            }
+            saveData();
+            return item.rank;
+        }
+
+        function getUnitColor(unitNum) {
+            const colors = {
+                1: 'bg-blue-100 text-blue-700 border-blue-200',
+                2: 'bg-sky-100 text-sky-700 border-sky-200',
+                3: 'bg-cyan-100 text-cyan-700 border-cyan-200',
+                4: 'bg-teal-100 text-teal-700 border-teal-200',
+                5: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                6: 'bg-green-100 text-green-700 border-green-200',
+                7: 'bg-amber-100 text-amber-700 border-amber-200',
+                8: 'bg-red-100 text-red-700 border-red-200',
+                9: 'bg-lime-100 text-lime-700 border-lime-200',
+                10: 'bg-pink-100 text-pink-700 border-pink-200',
+                11: 'bg-indigo-100 text-indigo-700 border-indigo-200'
+            };
+            return colors[unitNum] || 'bg-gray-100 text-gray-700 border-gray-200';
+        }
+
+        function getRankStyle(rank) {
+            if (rank === 2) return { class: "bg-purple-50 hover:bg-purple-100", icon: '<i class="fas fa-crown text-purple-500" title="Rank 2"></i>', color: "text-purple-600" };
+            if (rank === 1) return { class: "bg-blue-50 hover:bg-blue-100", icon: '<i class="fas fa-check text-blue-500" title="Rank 1"></i>', color: "text-blue-600" };
+            if (rank === 0) return { class: "hover:bg-teal-50", icon: '<span class="text-gray-300">-</span>', color: "text-gray-500" };
+            if (rank === -1) return { class: "bg-yellow-50 hover:bg-yellow-100", icon: '<i class="fas fa-exclamation-triangle text-yellow-500" title="Rank -1"></i>', color: "text-yellow-600" };
+            if (rank === -2) return { class: "bg-red-50 hover:bg-red-100", icon: '<i class="fas fa-fire text-red-500" title="Rank -2"></i>', color: "text-red-500" };
+            return { class: "hover:bg-teal-50", icon: '<span class="text-gray-300">-</span>', color: "text-gray-500" };
+        }
+
+        function switchTab(tabName) {
+            const listBtn = document.getElementById('tab-list');
+            const quizBtn = document.getElementById('tab-quiz');
+            const listView = document.getElementById('view-list');
+            const quizView = document.getElementById('view-quiz');
+
+            if (tabName === 'list') {
+                listBtn.classList.add('border-teal-500', 'text-teal-600');
+                listBtn.classList.remove('text-gray-500', 'border-transparent');
+                quizBtn.classList.remove('border-teal-500', 'text-teal-600');
+                quizBtn.classList.add('text-gray-500', 'border-transparent');
+                
+                listView.classList.remove('hidden');
+                quizView.classList.add('hidden');
+                filterList();
+            } else {
+                quizBtn.classList.add('border-teal-500', 'text-teal-600');
+                quizBtn.classList.remove('text-gray-500', 'border-transparent');
+                listBtn.classList.remove('border-teal-500', 'text-teal-600');
+                listBtn.classList.add('text-gray-500', 'border-transparent');
+
+                quizView.classList.remove('hidden');
+                listView.classList.add('hidden');
+                updateWeakButton();
+            }
+        }
+
+        function renderList(data) {
+            const tbody = document.getElementById('vocab-table-body');
+            tbody.innerHTML = '';
+            document.getElementById('total-count').innerText = data.length;
+            
+            if (data.length === 0) {
+                document.getElementById('no-results').classList.remove('hidden');
+                document.getElementById('no-results').classList.add('flex');
+            } else {
+                document.getElementById('no-results').classList.add('hidden');
+                document.getElementById('no-results').classList.remove('flex');
+            }
+
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                const style = getRankStyle(item.rank);
+                const badgeClass = getUnitColor(item.u);
+                
+                tr.className = `${style.class} transition-colors group`;
+                tr.innerHTML = `
+                    <td class="px-4 py-3 text-center whitespace-nowrap">${style.icon}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="text-[10px] uppercase font-bold px-2 py-1 rounded border ${badgeClass}">Unit ${item.u}</span>
+                    </td>
+                    <td class="px-4 py-3 text-sm font-bold text-gray-800">${item.w}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">
+                        <div class="font-medium">${item.j}</div>
+                        <div class="text-xs text-gray-500 italic mt-0.5">${item.d}</div>
+                        ${item.s ? `<div class="text-xs text-teal-600 mt-1 border-l-2 border-teal-200 pl-2">"${item.s}"</div>` : ''}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterList() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const unitFilter = document.getElementById('unit-filter').value;
+            const rankFilter = document.getElementById('rank-filter').value;
+
+            const filtered = vocabData.filter(item => {
+                const matchesSearch = item.w.toLowerCase().includes(query) || 
+                                      item.j.includes(query) ||
+                                      item.d.toLowerCase().includes(query);
+                const matchesUnit = unitFilter === 'all' || item.u == unitFilter;
+                
+                let matchesRank = true;
+                if (rankFilter !== 'all') {
+                     matchesRank = item.rank == parseInt(rankFilter);
+                }
+
+                return matchesSearch && matchesUnit && matchesRank;
+            });
+            renderList(filtered);
+        }
+
+        function updateWeakButton() {
+            const weakCount = vocabData.filter(i => i.rank < 0).length; 
+            const btn = document.getElementById('weak-mode-btn');
+            if (weakCount === 0) {
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                btn.onclick = null;
+                btn.innerHTML = `<i class="fas fa-check-circle"></i> 苦手な単語はありません`;
+            } else {
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                btn.onclick = () => startQuiz('weak');
+                btn.innerHTML = `<i class="fas fa-fire"></i> 苦手克服モード (${weakCount}語)`;
+            }
+        }
+
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let totalQuizCount = 0;
+        let isAnswering = false;
+        let sessionRankUp = 0;
+        let sessionRankDown = 0;
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startQuiz(countOrMode, unit) {
+            document.getElementById('quiz-start').classList.add('hidden');
+            document.getElementById('quiz-question').classList.remove('hidden');
+            document.getElementById('quiz-result').classList.add('hidden');
+
+            let pool = [];
+            if (countOrMode === 'weak') {
+                pool = vocabData.filter(i => i.rank < 0).sort((a, b) => a.rank - b.rank); 
+            } else {
+                pool = unit === 'all' ? [...vocabData] : vocabData.filter(i => i.u == unit);
+                pool = shuffleArray(pool);
+            }
+
+            if (typeof countOrMode === 'number') pool = pool.slice(0, countOrMode);
+
+            currentQuestions = pool;
+            totalQuizCount = currentQuestions.length;
+            currentIndex = 0;
+            score = 0;
+            sessionRankUp = 0;
+            sessionRankDown = 0;
+
+            showQuestion();
+        }
+
+        function generateQuestionOptions(targetItem) {
+            let possibleTypes = ['meaning'];
+            
+            if (targetItem.rank >= 1) {
+                possibleTypes.push('def');
+                if (targetItem.s && targetItem.s !== "") possibleTypes.push('cloze');
+                if (targetItem.rank === 2) {
+                    possibleTypes.push('def');
+                    if (targetItem.s) possibleTypes.push('cloze');
+                }
+            }
+
+            const qType = possibleTypes[Math.floor(Math.random() * possibleTypes.length)];
+            const others = vocabData.filter(i => i.w !== targetItem.w);
+            const shuffledOthers = shuffleArray([...others]);
+            const distractors = shuffledOthers.slice(0, 3);
+            
+            let options = [];
+            let mainHtml = "";
+            let typeLabel = "";
+
+            if (qType === 'meaning') {
+                typeLabel = "MEANING (日本語を選べ)";
+                mainHtml = `<h2 class="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-2 tracking-tight break-words">${targetItem.w}</h2>`;
+                currentCorrectAnswerText = targetItem.j;
+                options = [
+                    { text: targetItem.j, isCorrect: true, sub: "" },
+                    { text: distractors[0].j, isCorrect: false, sub: "" },
+                    { text: distractors[1].j, isCorrect: false, sub: "" },
+                    { text: distractors[2].j, isCorrect: false, sub: "" }
+                ];
+            } else if (qType === 'def') {
+                typeLabel = "DEFINITION (意味を選べ)";
+                mainHtml = `<h2 class="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-2 tracking-tight break-words">${targetItem.w}</h2>`;
+                currentCorrectAnswerText = targetItem.d;
+                options = [
+                    { text: targetItem.d, isCorrect: true, sub: "ENG" },
+                    { text: distractors[0].d, isCorrect: false, sub: "ENG" },
+                    { text: distractors[1].d, isCorrect: false, sub: "ENG" },
+                    { text: distractors[2].d, isCorrect: false, sub: "ENG" }
+                ];
+            } else { 
+                typeLabel = "FILL IN THE BLANK";
+                const sentenceHtml = targetItem.s.replace(/______/g, "<span class='cloze-blank'>?</span>");
+                mainHtml = `<div class="text-xl sm:text-2xl text-left leading-relaxed font-medium text-gray-700 w-full">${sentenceHtml}</div>`;
+                currentCorrectAnswerText = targetItem.w;
+                options = [
+                    { text: targetItem.w, isCorrect: true, sub: "" },
+                    { text: distractors[0].w, isCorrect: false, sub: "" },
+                    { text: distractors[1].w, isCorrect: false, sub: "" },
+                    { text: distractors[2].w, isCorrect: false, sub: "" }
+                ];
+            }
+
+            return {
+                typeLabel,
+                mainHtml,
+                options: shuffleArray(options)
+            };
+        }
+
+        function showQuestion() {
+            isAnswering = true;
+            const item = currentQuestions[currentIndex];
+            const rankStyle = getRankStyle(item.rank);
+            const qData = generateQuestionOptions(item);
+
+            document.getElementById('question-counter').innerText = `Question ${currentIndex + 1}/${totalQuizCount}`;
+            document.getElementById('score-display').innerText = score;
+            
+            document.getElementById('q-type-label').innerText = qData.typeLabel;
+            document.getElementById('q-content-area').innerHTML = qData.mainHtml;
+            
+            const rankIndicator = document.getElementById('rank-indicator');
+            rankIndicator.innerHTML = `Rank: <span class="${rankStyle.color}">${item.rank}</span>`;
+            
+            const unitBadge = document.getElementById('quiz-unit-badge');
+            unitBadge.innerText = item.unitFull;
+            unitBadge.className = `text-xs font-bold px-2 py-1 rounded mb-1 inline-block border ${getUnitColor(item.u)}`;
+
+            const percent = ((currentIndex) / totalQuizCount) * 100;
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+            document.getElementById('feedback-overlay').style.opacity = '0';
+            document.getElementById('correct-answer-display').innerHTML = ""; 
+
+            const container = document.getElementById('choices-container');
+            container.innerHTML = '';
+
+            qData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left bg-white border-2 border-transparent hover:border-teal-200 hover:bg-teal-50 text-gray-700 font-bold py-4 px-6 rounded-xl shadow-sm transition-all active:scale-[0.98] flex items-center group";
+                
+                const langBadge = opt.sub === "ENG" 
+                    ? `<span class="bg-purple-100 text-purple-700 text-[10px] font-bold px-1.5 py-0.5 rounded ml-2 border border-purple-200 shrink-0">ENG</span>` 
+                    : ``;
+
+                btn.innerHTML = `
+                    <span class="bg-gray-200 text-gray-500 text-xs font-bold px-2 py-1 rounded mr-3 shrink-0 group-hover:bg-teal-200 group-hover:text-teal-700 transition-colors">${idx + 1}</span> 
+                    <span class="mr-1 leading-tight">${opt.text}</span>
+                    ${langBadge}
+                `;
+                btn.onclick = () => checkAnswer(btn, opt.isCorrect, item);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(btn, isCorrect, item) {
+            if (!isAnswering) return;
+            isAnswering = false;
+
+            const oldRank = item.rank;
+            const newRank = updateRank(item.w, isCorrect);
+            
+            if (newRank > oldRank) sessionRankUp++;
+            if (newRank < oldRank) sessionRankDown++;
+
+            const overlay = document.getElementById('feedback-overlay');
+            const icon = document.getElementById('feedback-icon');
+            const rankMsg = document.getElementById('rank-change-msg');
+            const correctDisplay = document.getElementById('correct-answer-display');
+
+            if (isCorrect) {
+                score++;
+                btn.classList.add('correct-anim');
+                icon.innerHTML = '<i class="fas fa-check-circle text-green-500 drop-shadow-lg"></i>';
+                correctDisplay.innerHTML = "";
+                
+                if (newRank > oldRank) {
+                    rankMsg.innerHTML = '<span class="text-blue-600">Level Up! (Rank ' + newRank + ') <i class="fas fa-arrow-up"></i></span>';
+                } else {
+                    rankMsg.innerHTML = '<span class="text-gray-400 text-sm">Perfect! (Rank ' + newRank + ')</span>';
+                }
+            } else {
+                btn.classList.add('wrong-anim');
+                icon.innerHTML = '<i class="fas fa-times-circle text-red-500 drop-shadow-lg"></i>';
+                
+                if (newRank < oldRank) {
+                    rankMsg.innerHTML = '<span class="text-red-500">Level Down... (Rank ' + newRank + ') <i class="fas fa-arrow-down"></i></span>';
+                } else {
+                    rankMsg.innerHTML = '<span class="text-red-700 text-sm">Don\'t give up!</span>';
+                }
+
+                correctDisplay.innerHTML = `
+                    <div class="text-sm text-gray-500 mt-2 font-bold">正解</div>
+                    <div class="text-xl font-bold text-teal-600 leading-tight">${currentCorrectAnswerText}</div>
+                `;
+            }
+
+            overlay.style.opacity = '1';
+            icon.classList.remove('scale-50');
+            icon.classList.add('scale-100');
+
+            const waitTime = isCorrect ? 1200 : 2500;
+
+            setTimeout(() => {
+                icon.classList.remove('scale-100');
+                icon.classList.add('scale-50');
+                currentIndex++;
+                if (currentIndex < totalQuizCount) {
+                    showQuestion();
+                } else {
+                    showResult();
+                }
+            }, waitTime);
+        }
+
+        function showResult() {
+            document.getElementById('quiz-question').classList.add('hidden');
+            document.getElementById('quiz-result').classList.remove('hidden');
+            
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('total-questions').innerText = totalQuizCount;
+            document.getElementById('rank-up-count').innerText = sessionRankUp;
+            document.getElementById('rank-down-count').innerText = sessionRankDown;
+        }
+
+        function resetQuizView() {
+            document.getElementById('quiz-result').classList.add('hidden');
+            document.getElementById('quiz-start').classList.remove('hidden');
+            updateWeakButton();
+        }
+
+        loadData();
+        renderList(vocabData);
+    </script>
+</body>
+</html>
